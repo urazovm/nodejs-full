@@ -1,0 +1,46 @@
+extends ../layout
+
+block content
+    head
+        meta(charset='utf-8')
+        title Citizen #{userId}
+    body(data-userid="" + userId)
+        h1 Hello Citizen #{userId}
+        h4#notification
+        #copDetails
+        #map
+
+        button(onclick="helpCitizen()") Help citizen
+
+    script(src='/js/uber.js')
+
+    script.
+        $.ajax({
+            url: "/cops/info?userId=" + userId,
+            type: "GET",
+            dataType: "json",
+            success: function (data) { //Once response is successful
+                copDetails = data.copDetails; //Save the cop details
+                copDetails.location = {
+                    address: copDetails.location.address,
+                    longitude: copDetails.location.coordinates[0],
+                    latitude: copDetails.location.coordinates[1]
+                };
+                document.getElementById("copDetails").innerHTML = JSON.stringify(data.copDetails);
+            },
+            error: function (httpRequest, status, error) {
+                console.log(error);
+            }
+        });
+
+        socket.on("request-for-help", function (eventData) {
+            console.log('have new request.........')
+            //Once request is received, do this:
+
+            //Save request details
+            requestDetails = eventData; //Contains info of citizen
+
+            //display the data received from the event
+            document.getElementById("notification").innerHTML = "Someone's being attacked by a wildling! \n" + JSON.stringify(requestDetails);
+        });
+
